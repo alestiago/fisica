@@ -2,31 +2,29 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forge2d/forge2d.dart' as box2d;
 
-/// {@template WorldStepListenable}
-///
+/// {@template WorldStepNotifier}
+/// Notifies whenever the World is stepped in.
 /// {@endtemplate}
-class WorldStepListenable extends ChangeNotifier {
-  /// {@macro WorldStepListenable}
-  WorldStepListenable();
+class WorldStepNotifier extends ChangeNotifier {
+  /// {@macro WorldStepNotifier}
+  WorldStepNotifier();
 
   /// Notifies the listeners that the world has stepped.
-  void step() {
-    notifyListeners();
-  }
+  void step() => notifyListeners();
 }
 
 /// {@template World}
 ///
 /// {@endtemplate}
 // TODO(alestiago): Add documentation.
-class World extends InheritedWidget {
+class World extends InheritedNotifier<WorldStepNotifier> {
   /// {@macro World}
   World({
     required Widget child,
     super.key,
-  })  : stepListenable = WorldStepListenable(),
-        super(
+  }) : super(
           child: _WorldTicker(child: child),
+          notifier: WorldStepNotifier(),
         ) {
     final gravity = box2d.Vector2(0, 10);
     world = box2d.World(gravity);
@@ -40,9 +38,6 @@ class World extends InheritedWidget {
   /// * [Box2D](https://box2d.org/), a 2D Physics Engine.
   late final box2d.World world;
 
-  /// {@macro WorldStepListenable}
-  final WorldStepListenable stepListenable;
-
   /// Returns the [World] instance from the closest [World] ancestor.
   ///
   /// Throws an [AssertionError] if there is no [World] ancestor.
@@ -55,7 +50,7 @@ class World extends InheritedWidget {
   @override
   bool updateShouldNotify(covariant World oldWidget) {
     final changed = oldWidget.world != world;
-    // TODO(alestiago): Invesitgate if there are memory leaks when the previous
+    // TODO(alestiago): Investigate if there are memory leaks when the previous
     // world is not cleared.
     return changed;
   }
@@ -81,8 +76,10 @@ class _WorldTickerState extends State<_WorldTicker>
 
     final dt =
         elapsed.inMicroseconds.toDouble() / Duration.microsecondsPerSecond;
+
+    /// TODO(alestiago): Check if dt unit is microseconds.
     world.world.stepDt(dt);
-    world.stepListenable.step();
+    world.notifier!.step();
   }
 
   @override

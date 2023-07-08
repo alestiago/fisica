@@ -33,6 +33,7 @@ class _BodyState extends State<Body> {
     );
     final body = world.createBody(bodyDef);
 
+    // TODO(alestiago): Provide an interface for users to provide their own fixtures.
     final fixtureDef = box2d.FixtureDef(
       box2d.PolygonShape()
         ..setAsBox(
@@ -68,14 +69,14 @@ class _BodyState extends State<Body> {
       final world = World.of(context);
       _world = world;
       _createBody(world.world);
-      world.stepListenable.addListener(_updateTransformation);
+      world.notifier!.addListener(_updateTransformation);
     } else {
       final newWorld = World.of(context);
       if (_world != newWorld) {
-        world.stepListenable.removeListener(_updateTransformation);
+        world.notifier!.removeListener(_updateTransformation);
         _world = newWorld;
         _createBody(newWorld.world);
-        newWorld.stepListenable.addListener(_updateTransformation);
+        newWorld.notifier!.addListener(_updateTransformation);
       }
     }
   }
@@ -84,7 +85,7 @@ class _BodyState extends State<Body> {
   void dispose() {
     final world = _world;
     if (world != null) {
-      world.stepListenable.removeListener(_updateTransformation);
+      world.notifier!.removeListener(_updateTransformation);
       world.world.destroyBody(_body!);
       _world = null;
     }
