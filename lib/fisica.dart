@@ -1,4 +1,4 @@
-/// A Very Good Project created by Very Good CLI.
+/// Two-dimensional physics simulation for Flutter.
 library fisica;
 
-export 'src/fisica.dart';
+export 'src/dynamics/dynamics.dart';
